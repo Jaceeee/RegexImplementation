@@ -34,8 +34,8 @@ public class RegEx {
             System.err.println(er);
             return;
         }
-//        System.out.println("============= Return value =============");
-//        System.out.println(answer);
+        System.out.println("============= Return value =============");
+        System.out.println(answer);
     }
 
     private static String fileParsing(BufferedReader buff) throws IOException {
@@ -130,14 +130,14 @@ public class RegEx {
                 if(pattern.charAt(i-1) == ')') {
                     String[] sub_res_set = disconfigure(pattern.substring(group_start, group_end));
                     for(int j = 0; j < ret_set.size(); j++) {
-                        ret_set.set(j, ret_set.get(j).substring(0, ret_set.get(j).length() - sub_res_set[j].length()) + "(" + sub_res_set[j] + ")*");
+                        ret_set.set(j, ret_set.get(j).substring(0, ret_set.get(j).length() - sub_res_set[j].length()) + "(" + sub_res_set[j] + ")");
                     }
                 } else {
                     for(int j = 0; j < current_context.size(); j++) {
-                        current_context.set(j, current_context.get(j) + '*');
+                        current_context.set(j, current_context.get(j));
                     }
                     for(int j = edit_start; j <= edit_end; j++) {
-                        ret_set.set(j, ret_set.get(j) + '*');
+                        ret_set.set(j, ret_set.get(j));
                     }
                 }
 
@@ -188,27 +188,48 @@ public class RegEx {
     }
 
     private static boolean validate_candidate(String pattern, String string_to_check) {
-        int current_position = 0;
-        for(int i = 0; current_position < pattern.length() && i < string_to_check.length(); i++) {
+        int start_position = 0, end_position = pattern.length();
+        int current_position = start_position;
+        int index;
 
-        }
-        return false;
-    }
+        Stack<Integer> groups = new Stack<>();
 
-    private static boolean simple_pattern_matching(String pattern, String string_to_check) {
-        if(pattern.length() != string_to_check.length())
-            return false;
-
-        for(int i = 0; i < pattern.length() && i < string_to_check.length(); i++) {
-            if(pattern.charAt(i) != string_to_check.charAt(i)) {
-                return false;
+        for(index = 0; current_position < pattern.length() && index < string_to_check.length();) {
+            if(pattern.charAt(current_position) == '(') {
+                start_position = current_position;
+                groups.push(start_position);
+            } else if(pattern.charAt(current_position) == ')') {
+                start_position = groups.pop();
+                current_position = start_position;
+            } else {
+                if(pattern.charAt(current_position) != string_to_check.charAt(index)) {
+                    if(groups.isEmpty()) {
+                        break;
+                    } else {
+                        int current_size = groups.size();
+                        for(int j = current_position; j < pattern.length(); j++) {
+                            if(pattern.charAt(j) == '(') {
+                                groups.push(current_position);
+                            } else if(pattern.charAt(j) == ')') {
+                                if(groups.size() == current_size) {
+                                    current_position = j + 1;
+                                    j = pattern.length();
+                                }
+                                groups.pop();
+                            }
+                        }
+                    }
+                } else {
+                    index++;
+                }
             }
+            current_position++;
         }
 
-        return true;
-    }
-
-    private static boolean indefinite_pattern_matching(String pattern, String string_to_check) /*kleene */{
-        return false;
+        if(index == string_to_check.length()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
