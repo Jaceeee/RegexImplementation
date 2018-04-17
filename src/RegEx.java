@@ -116,6 +116,7 @@ public class RegEx {
         Stack<Integer> edit_context = new Stack<>();
         edit_context.push(0);
         edit_context.push(0);
+        current_context = context.peek();
 
         int context_level = 0;
         int edit_start = 0, edit_end = 0;
@@ -134,10 +135,12 @@ public class RegEx {
                     }
                 } else {
                     for(int j = 0; j < current_context.size(); j++) {
-                        current_context.set(j, current_context.get(j));
+                        System.out.println("Current context: " + current_context.get(j).substring(0, current_context.get(j).length() - 1) + "(" + pattern.charAt(i-1) + ")");
+                        current_context.set(j, current_context.get(j).substring(0, current_context.get(j).length() - 1) + "(" + pattern.charAt(i-1) + ")");
                     }
                     for(int j = edit_start; j <= edit_end; j++) {
-                        ret_set.set(j, ret_set.get(j));
+                        System.out.println("Current ret-set: " + ret_set.get(j).substring(0, ret_set.get(j).length() - 1) + "(" + pattern.charAt(i-1) + ")");
+                        ret_set.set(j, ret_set.get(j).substring(0, ret_set.get(j).length() - 1) + "(" + pattern.charAt(i-1) + ")");
                     }
                 }
 
@@ -191,6 +194,7 @@ public class RegEx {
         int start_position = 0, end_position = pattern.length();
         int current_position = start_position;
         int index;
+        boolean accountability = false;
 
         Stack<Integer> groups = new Stack<>();
 
@@ -198,7 +202,7 @@ public class RegEx {
             if(pattern.charAt(current_position) == '(') {
                 start_position = current_position;
                 groups.push(start_position);
-            } else if(pattern.charAt(current_position) == ')') {
+            } else if(pattern.charAt(current_position) == ')' && !groups.isEmpty()) {
                 start_position = groups.pop();
                 current_position = start_position;
             } else {
@@ -212,7 +216,7 @@ public class RegEx {
                                 groups.push(current_position);
                             } else if(pattern.charAt(j) == ')') {
                                 if(groups.size() == current_size) {
-                                    current_position = j + 1;
+                                    current_position = j;
                                     j = pattern.length();
                                 }
                                 groups.pop();
